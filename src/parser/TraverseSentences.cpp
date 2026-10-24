@@ -203,6 +203,8 @@ std::string FindPathSentence::toString() const {
   buf += "FIND";
   if (noLoop_) {
     buf += " NOLOOP PATH";
+  } else if (isWeighted()) {
+    buf += " WEIGHTED SHORTEST PATH";
   } else if (isShortest_) {
     if (singleShortest_) {
       buf += " SINGLE ";
@@ -224,11 +226,14 @@ std::string FindPathSentence::toString() const {
     buf += " ";
     buf += over_->toString();
   }
+  if (isWeighted()) {
+    buf += " WEIGHT BY " + weightProp_;
+  }
   if (where_ != nullptr) {
     buf += " ";
     buf += where_->toString();
   }
-  if (step_ != nullptr) {
+  if (step_ != nullptr && !(isWeighted() && step_->steps() == 0xFFFFFFFFu)) {
     buf += " UPTO ";
     buf += step_->toString();
   }

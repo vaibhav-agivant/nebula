@@ -118,6 +118,29 @@ std::unique_ptr<PlanNodeDescription> ShortestPath::explain() const {
   return desc;
 }
 
+std::unique_ptr<PlanNodeDescription> WeightedShortestPath::explain() const {
+  auto desc = SingleInputNode::explain();
+  addDescription("weightProp", weightProp_, desc.get());
+  addDescription("maxSteps", folly::toJson(util::toJson(static_cast<int64_t>(maxSteps_))), desc.get());
+  addDescription("edgeDirection", apache::thrift::util::enumNameSafe(edgeDirection_), desc.get());
+  addDescription(
+      "edgeProps", edgeProps_ ? folly::toJson(util::toJson(*edgeProps_)) : "", desc.get());
+  return desc;
+}
+
+PlanNode* WeightedShortestPath::clone() const {
+  auto* path = WeightedShortestPath::make(qctx_, nullptr, space_);
+  path->SingleInputNode::cloneMembers(*this);
+  if (edgeProps_) {
+    path->setEdgeProps(std::make_unique<std::vector<EdgeProp>>(*edgeProps_));
+  }
+  path->setEdgeDirection(edgeDirection_);
+  path->setWeight(weightProp_, weightIsInt_);
+  path->setMaxSteps(maxSteps_);
+  path->setVidVars(fromVar_, toVar_);
+  return path;
+}
+
 PlanNode* ShortestPath::clone() const {
   auto* path = ShortestPath::make(qctx_, nullptr, space_, singleShortest_);
   path->cloneMembers(*this);

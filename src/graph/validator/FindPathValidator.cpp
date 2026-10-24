@@ -27,8 +27,48 @@ Status FindPathValidator::validateImpl() {
   NG_RETURN_IF_ERROR(ValidateUtil::validateOver(qctx_, fpSentence->over(), pathCtx_->over));
   NG_RETURN_IF_ERROR(validateWhere(fpSentence->where()));
   NG_RETURN_IF_ERROR(ValidateUtil::validateStep(fpSentence->step(), pathCtx_->steps));
+  pathCtx_->isWeight = fpSentence->isWeighted();
+  if (pathCtx_->isWeight) {
+    NG_RETURN_IF_ERROR(validateWeight(fpSentence));
+  }
   NG_RETURN_IF_ERROR(validateYield(fpSentence->yield()));
 
+  return Status::OK();
+}
+
+// The weight property must exist on every listed edge type and be an int or a double.
+Status FindPathValidator::validateWeight(FindPathSentence* sentence) {
+  const auto& prop = sentence->weightProp();
+  auto space = vctx_->whichSpace();
+  auto names = sentence->over()->edges();
+  bool allInt = true;
+  for (size_t i = 0; i < names.size(); ++i) {
+    auto schema = qctx_->schemaMng()->getEdgeSchema(space.id, pathCtx_->over.edgeTypes[i]);
+    const auto* field = schema ? schema->field(prop) : nullptr;
+    const auto& edge = *names[i]->edge();
+    if (field == nullptr) {
+      return Status::SemanticError(
+          "Weight property `%s' not found in edge type `%s'.", prop.c_str(), edge.c_str());
+    }
+    switch (field->type()) {
+      case nebula::cpp2::PropertyType::INT8:
+      case nebula::cpp2::PropertyType::INT16:
+      case nebula::cpp2::PropertyType::INT32:
+      case nebula::cpp2::PropertyType::INT64:
+        break;
+      case nebula::cpp2::PropertyType::FLOAT:
+      case nebula::cpp2::PropertyType::DOUBLE:
+        allInt = false;
+        break;
+      default:
+        return Status::SemanticError(
+            "Weight property `%s' of edge type `%s' must be int or double.",
+            prop.c_str(),
+            edge.c_str());
+    }
+  }
+  pathCtx_->weightProp = prop;
+  pathCtx_->weightIsInt = allInt;
   return Status::OK();
 }
 
@@ -79,6 +119,18 @@ Status FindPathValidator::validateWhere(WhereClause* where) {
 Status FindPathValidator::validateYield(YieldClause* yield) {
   if (yield == nullptr) {
     return Status::SemanticError("Missing yield clause.");
+  }
+  if (pathCtx_->isWeight) {
+    const auto& cols = yield->columns();
+    if (cols.size() != 2 || strcasecmp(cols[0]->expr()->toString().c_str(), "path") != 0 ||
+        strcasecmp(cols[1]->expr()->toString().c_str(), "cost") != 0) {
+      return Status::SemanticError("Only support `YIELD path AS <name>, cost AS <name>'.");
+    }
+    outputs_.emplace_back(cols[0]->name(), Value::Type::PATH);
+    outputs_.emplace_back(cols[1]->name(),
+                          pathCtx_->weightIsInt ? Value::Type::INT : Value::Type::FLOAT);
+    pathCtx_->colNames = getOutColNames();
+    return Status::OK();
   }
   if (yield->columns().size() != 1) {
     return Status::SemanticError("Only support yield path");

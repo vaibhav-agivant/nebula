@@ -57,6 +57,8 @@ struct PathContext final : AstContext {
   bool isShortest{false};
   bool singleShortest{false};
   bool isWeight{false};
+  std::string weightProp;
+  bool weightIsInt{false};
   bool noLoop{false};
   bool withProp{false};
 

@@ -188,7 +188,7 @@ using namespace nebula;
 %token KW_ORDER KW_ASC KW_LIMIT KW_SAMPLE KW_OFFSET KW_ASCENDING KW_DESCENDING
 %token KW_DISTINCT KW_ALL KW_OF
 %token KW_BALANCE KW_LEADER KW_RESET KW_PLAN
-%token KW_SHORTEST KW_PATH KW_NOLOOP KW_SHORTESTPATH KW_ALLSHORTESTPATHS
+%token KW_SHORTEST KW_PATH KW_NOLOOP KW_SHORTESTPATH KW_ALLSHORTESTPATHS KW_WEIGHTED KW_WEIGHT
 %token KW_IS KW_NULL KW_DEFAULT
 %token KW_SNAPSHOT KW_SNAPSHOTS KW_LOOKUP
 %token KW_JOBS KW_JOB KW_RECOVER KW_FLUSH KW_COMPACT KW_REBUILD KW_SUBMIT KW_STATS KW_STATUS
@@ -311,7 +311,8 @@ using namespace nebula;
 %type <edge_keys> edge_keys
 %type <edge_key_ref> edge_key_ref
 %type <to_clause> to_clause
-%type <find_path_upto_clause> find_path_upto_clause
+%type <find_path_upto_clause> find_path_upto_clause weighted_upto_clause
+%type <intval> weighted_direction
 %type <group_clause> group_clause
 %type <host_list> host_list
 %type <host_item> host_item
@@ -527,6 +528,8 @@ unreserved_keyword
     | KW_SHORTESTPATH       { $$ = new std::string("shortestpath"); }
     | KW_ALLSHORTESTPATHS   { $$ = new std::string("allshortestpaths"); }
     | KW_NOLOOP             { $$ = new std::string("noloop"); }
+    | KW_WEIGHTED           { $$ = new std::string("weighted"); }
+    | KW_WEIGHT             { $$ = new std::string("weight"); }
     | KW_CONTAINS           { $$ = new std::string("contains"); }
     | KW_STARTS             { $$ = new std::string("starts"); }
     | KW_ENDS               { $$ = new std::string("ends"); }
@@ -2356,11 +2359,35 @@ find_path_sentence
         s->setYield($10);
         $$ = s;
     }
+    | KW_FIND KW_WEIGHTED KW_SHORTEST KW_PATH from_clause to_clause KW_OVER over_edges KW_WEIGHT KW_BY name_label weighted_direction weighted_upto_clause yield_clause {
+        auto *s = new FindPathSentence(true, false, false);
+        s->setFrom($5);
+        s->setTo($6);
+        s->setOver(new OverClause($8, static_cast<storage::cpp2::EdgeDirection>($12)));
+        s->setWeightProp(*$11);
+        delete $11;
+        s->setStep($13);
+        s->setYield($14);
+        $$ = s;
+    }
     ;
 
 opt_with_properties
     : %empty { $$ = false; }
     | KW_WITH KW_PROP { $$ = true; }
+    ;
+
+weighted_direction
+    : %empty { $$ = static_cast<int64_t>(storage::cpp2::EdgeDirection::OUT_EDGE); }
+    | KW_REVERSELY { $$ = static_cast<int64_t>(storage::cpp2::EdgeDirection::IN_EDGE); }
+    | KW_BIDIRECT { $$ = static_cast<int64_t>(storage::cpp2::EdgeDirection::BOTH); }
+    ;
+
+weighted_upto_clause
+    : %empty { $$ = new StepClause(0xFFFFFFFFu); }
+    | KW_UPTO legal_integer KW_STEPS {
+        $$ = new StepClause($2);
+    }
     ;
 
 find_path_upto_clause
@@ -2998,7 +3025,7 @@ piped_sentence
             auto limit = static_cast<LimitSentence *>($3);
             auto shortest = path->isShortest();
             auto offset = limit->offset();
-            if (shortest && offset == 0) {
+            if (shortest && !path->isWeighted() && offset == 0) {
                 auto limitValue = limit->count();
                 path->setLimit(limitValue);
                 $$ = path;

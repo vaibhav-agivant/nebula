@@ -27,6 +27,8 @@ class FindPathValidator final : public Validator {
 
   Status validateYield(YieldClause* yield);
 
+  Status validateWeight(FindPathSentence* sentence);
+
  private:
   std::unique_ptr<PathContext> pathCtx_;
 };

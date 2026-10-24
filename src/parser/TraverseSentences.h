@@ -457,6 +457,19 @@ class FindPathSentence final : public Sentence {
     singleShortest_ = singleShortest;
   }
 
+  // FIND WEIGHTED SHORTEST PATH: the edge property summed as the path cost
+  void setWeightProp(std::string prop) {
+    weightProp_ = std::move(prop);
+  }
+
+  const std::string& weightProp() const {
+    return weightProp_;
+  }
+
+  bool isWeighted() const {
+    return !weightProp_.empty();
+  }
+
   FromClause* from() const {
     return from_.get();
   }
@@ -508,6 +521,7 @@ class FindPathSentence final : public Sentence {
   bool withProp_;
   bool noLoop_;
   bool singleShortest_{false};
+  std::string weightProp_;
   int64_t limit_{-1};
   std::unique_ptr<FromClause> from_;
   std::unique_ptr<ToClause> to_;

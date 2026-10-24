@@ -43,6 +43,9 @@ namespace graph {
 
 StatusOr<SubPlan> PathPlanner::transform(AstContext* astCtx) {
   pathCtx_ = static_cast<PathContext*>(astCtx);
+  if (pathCtx_->isWeight) {
+    return weightedPlan();
+  }
   if (pathCtx_->isShortest) {
     auto qctx = pathCtx_->qctx;
     buildStart(pathCtx_->from, pathCtx_->fromVidsVar, false);
@@ -68,6 +71,31 @@ StatusOr<SubPlan> PathPlanner::transform(AstContext* astCtx) {
   }
   // allpath plan
   return allPathPlan();
+}
+
+//  Project(from/to vids) -> WeightedShortestPath
+StatusOr<SubPlan> PathPlanner::weightedPlan() {
+  auto qctx = pathCtx_->qctx;
+  buildStart(pathCtx_->from, pathCtx_->fromVidsVar, false);
+  buildStart(pathCtx_->to, pathCtx_->toVidsVar, true);
+
+  SubPlan loopDep = loopDepPlan();
+  auto* path = WeightedShortestPath::make(qctx, loopDep.root, pathCtx_->space.id);
+  auto edgeProps = buildEdgeProps(false);
+  for (auto& ep : *edgeProps) {
+    ep.props_ref()->emplace_back(pathCtx_->weightProp);
+  }
+  path->setEdgeProps(std::move(edgeProps));
+  path->setEdgeDirection(pathCtx_->over.direction);
+  path->setWeight(pathCtx_->weightProp, pathCtx_->weightIsInt);
+  path->setMaxSteps(pathCtx_->steps.steps());
+  path->setVidVars(pathCtx_->fromVidsVar, pathCtx_->toVidsVar);
+  path->setColNames(pathCtx_->colNames);
+
+  SubPlan subPlan;
+  subPlan.root = path;
+  subPlan.tail = loopDep.tail;
+  return subPlan;
 }
 
 void PathPlanner::buildStart(Starts& starts, std::string& vidsVar, bool reverse) {

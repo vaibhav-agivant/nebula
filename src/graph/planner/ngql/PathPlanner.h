@@ -37,6 +37,8 @@ class PathPlanner final : public Planner {
 
   StatusOr<SubPlan> allPathPlan();
 
+  StatusOr<SubPlan> weightedPlan();
+
   SubPlan pathInputPlan(PlanNode* dep, Starts& starts);
 
   PlanNode* buildPathProp(PlanNode* dep);

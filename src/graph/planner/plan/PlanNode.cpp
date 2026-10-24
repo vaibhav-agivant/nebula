@@ -303,6 +303,8 @@ const char* PlanNode::toString(PlanNode::Kind kind) {
       return "CrossJoin";
     case Kind::kShortestPath:
       return "ShortestPath";
+    case Kind::kWeightedShortestPath:
+      return "WeightedShortestPath";
     case Kind::kArgument:
       return "Argument";
     case Kind::kRollUpApply:

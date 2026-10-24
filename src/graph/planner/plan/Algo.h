@@ -364,6 +364,88 @@ class ShortestPath final : public SingleInputNode {
   storage::cpp2::EdgeDirection edgeDirection_{Direction::OUT_EDGE};
 };
 
+// Cheapest path by summing an edge property; Bellman-Ford rounds run by the executor.
+class WeightedShortestPath final : public SingleInputNode {
+ public:
+  static WeightedShortestPath* make(QueryContext* qctx, PlanNode* node, GraphSpaceID space) {
+    return qctx->objPool()->makeAndAdd<WeightedShortestPath>(qctx, node, space);
+  }
+
+  PlanNode* clone() const override;
+
+  std::unique_ptr<PlanNodeDescription> explain() const override;
+
+  GraphSpaceID space() const {
+    return space_;
+  }
+
+  const std::vector<EdgeProp>* edgeProps() const {
+    return edgeProps_.get();
+  }
+
+  void setEdgeProps(std::unique_ptr<std::vector<EdgeProp>> edgeProps) {
+    edgeProps_ = std::move(edgeProps);
+  }
+
+  storage::cpp2::EdgeDirection edgeDirection() const {
+    return edgeDirection_;
+  }
+
+  void setEdgeDirection(Direction direction) {
+    edgeDirection_ = direction;
+  }
+
+  const std::string& weightProp() const {
+    return weightProp_;
+  }
+
+  bool weightIsInt() const {
+    return weightIsInt_;
+  }
+
+  void setWeight(std::string prop, bool isInt) {
+    weightProp_ = std::move(prop);
+    weightIsInt_ = isInt;
+  }
+
+  uint32_t maxSteps() const {
+    return maxSteps_;
+  }
+
+  void setMaxSteps(uint32_t maxSteps) {
+    maxSteps_ = maxSteps;
+  }
+
+  const std::string& fromVar() const {
+    return fromVar_;
+  }
+
+  const std::string& toVar() const {
+    return toVar_;
+  }
+
+  void setVidVars(std::string fromVar, std::string toVar) {
+    fromVar_ = std::move(fromVar);
+    toVar_ = std::move(toVar);
+    // keep the from-vids variable alive until this node has read it
+    readVariable(fromVar_);
+  }
+
+ private:
+  friend ObjectPool;
+  WeightedShortestPath(QueryContext* qctx, PlanNode* node, GraphSpaceID space)
+      : SingleInputNode(qctx, Kind::kWeightedShortestPath, node), space_(space) {}
+
+  GraphSpaceID space_;
+  std::unique_ptr<std::vector<EdgeProp>> edgeProps_;
+  storage::cpp2::EdgeDirection edgeDirection_{Direction::OUT_EDGE};
+  std::string weightProp_;
+  bool weightIsInt_{false};
+  uint32_t maxSteps_{0};
+  std::string fromVar_;
+  std::string toVar_;
+};
+
 class CartesianProduct final : public SingleDependencyNode {
  public:
   static CartesianProduct* make(QueryContext* qctx, PlanNode* input) {
