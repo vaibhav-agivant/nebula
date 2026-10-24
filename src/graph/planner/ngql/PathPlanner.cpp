@@ -41,8 +41,34 @@ namespace graph {
 //                 +--------+---------+
 //
 
+SubPlan PathPlanner::weightedPlan() {
+  auto qctx = pathCtx_->qctx;
+  auto* pt = PassThroughNode::make(qctx, nullptr);
+  auto* path = WeightedShortestPath::make(qctx,
+                                          pt,
+                                          pathCtx_->space.id,
+                                          pathCtx_->from.vids.front(),
+                                          pathCtx_->to.vids.front(),
+                                          pathCtx_->weightProp,
+                                          pathCtx_->steps.steps());
+  auto edgeProps = buildEdgeProps(false);
+  for (auto& ep : *edgeProps) {
+    ep.props_ref()->emplace_back(pathCtx_->weightProp);
+  }
+  path->setEdgeProps(std::move(edgeProps));
+  path->setColNames(pathCtx_->colNames);
+
+  SubPlan subPlan;
+  subPlan.root = path;
+  subPlan.tail = pt;
+  return subPlan;
+}
+
 StatusOr<SubPlan> PathPlanner::transform(AstContext* astCtx) {
   pathCtx_ = static_cast<PathContext*>(astCtx);
+  if (pathCtx_->isWeight) {
+    return weightedPlan();
+  }
   if (pathCtx_->isShortest) {
     auto qctx = pathCtx_->qctx;
     buildStart(pathCtx_->from, pathCtx_->fromVidsVar, false);

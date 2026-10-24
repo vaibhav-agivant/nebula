@@ -284,6 +284,81 @@ class AllPaths final : public BinaryInputNode {
   std::unique_ptr<std::vector<VertexProp>> vertexProps_;
 };
 
+// Cheapest path between one pair of vertices, weighted by an edge property.
+class WeightedShortestPath final : public SingleInputNode {
+ public:
+  using EdgeProp = nebula::storage::cpp2::EdgeProp;
+
+  static WeightedShortestPath* make(QueryContext* qctx,
+                                    PlanNode* dep,
+                                    GraphSpaceID space,
+                                    Value src,
+                                    Value dst,
+                                    std::string weightProp,
+                                    size_t maxSteps) {
+    return qctx->objPool()->makeAndAdd<WeightedShortestPath>(
+        qctx, dep, space, std::move(src), std::move(dst), std::move(weightProp), maxSteps);
+  }
+
+  PlanNode* clone() const override;
+
+  std::unique_ptr<PlanNodeDescription> explain() const override;
+
+  GraphSpaceID space() const {
+    return space_;
+  }
+
+  const Value& src() const {
+    return src_;
+  }
+
+  const Value& dst() const {
+    return dst_;
+  }
+
+  const std::string& weightProp() const {
+    return weightProp_;
+  }
+
+  // 0 means unbounded
+  size_t maxSteps() const {
+    return maxSteps_;
+  }
+
+  // edge props to fetch; edge types are signed according to the search direction
+  const std::vector<EdgeProp>* edgeProps() const {
+    return edgeProps_.get();
+  }
+
+  void setEdgeProps(std::unique_ptr<std::vector<EdgeProp>> edgeProps) {
+    edgeProps_ = std::move(edgeProps);
+  }
+
+ private:
+  friend ObjectPool;
+  WeightedShortestPath(QueryContext* qctx,
+                       PlanNode* dep,
+                       GraphSpaceID space,
+                       Value src,
+                       Value dst,
+                       std::string weightProp,
+                       size_t maxSteps)
+      : SingleInputNode(qctx, Kind::kWeightedShortestPath, dep),
+        space_(space),
+        src_(std::move(src)),
+        dst_(std::move(dst)),
+        weightProp_(std::move(weightProp)),
+        maxSteps_(maxSteps) {}
+
+ private:
+  GraphSpaceID space_;
+  Value src_;
+  Value dst_;
+  std::string weightProp_;
+  size_t maxSteps_{0};
+  std::unique_ptr<std::vector<EdgeProp>> edgeProps_;
+};
+
 class ShortestPath final : public SingleInputNode {
  public:
   static ShortestPath* make(QueryContext* qctx,

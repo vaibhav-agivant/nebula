@@ -203,6 +203,8 @@ std::string FindPathSentence::toString() const {
   buf += "FIND";
   if (noLoop_) {
     buf += " NOLOOP PATH";
+  } else if (weighted_) {
+    buf += " WEIGHTED SHORTEST PATH";
   } else if (isShortest_) {
     if (singleShortest_) {
       buf += " SINGLE ";
@@ -220,9 +222,26 @@ std::string FindPathSentence::toString() const {
     buf += " ";
     buf += to_->toString();
   }
+  std::string direction;
   if (over_ != nullptr) {
+    auto over = over_->toString();
+    if (weighted_) {
+      // the weighted syntax puts the direction after `WEIGHT BY'
+      for (const char* d : {" REVERSELY", " BIDIRECT"}) {
+        auto len = strlen(d);
+        if (over.size() >= len && over.compare(over.size() - len, len, d) == 0) {
+          direction = d;
+          over.resize(over.size() - len);
+        }
+      }
+    }
     buf += " ";
-    buf += over_->toString();
+    buf += over;
+  }
+  if (weighted_) {
+    buf += " WEIGHT BY ";
+    buf += weightProp_;
+    buf += direction;
   }
   if (where_ != nullptr) {
     buf += " ";

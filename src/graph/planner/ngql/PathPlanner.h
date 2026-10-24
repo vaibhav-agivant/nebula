@@ -29,6 +29,8 @@ class PathPlanner final : public Planner {
  private:
   SubPlan loopDepPlan();
 
+  SubPlan weightedPlan();
+
   PlanNode* getNeighbors(PlanNode* dep, bool reverse);
 
   SubPlan singlePairPlan(PlanNode* left, PlanNode* right);

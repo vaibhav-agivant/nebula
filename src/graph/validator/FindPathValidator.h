@@ -27,8 +27,13 @@ class FindPathValidator final : public Validator {
 
   Status validateYield(YieldClause* yield);
 
+  Status validateWeighted(FindPathSentence* sentence);
+
+  Status validateWeightedYield(YieldClause* yield);
+
  private:
   std::unique_ptr<PathContext> pathCtx_;
+  Value::Type weightType_{Value::Type::__EMPTY__};
 };
 }  // namespace graph
 }  // namespace nebula

@@ -11,6 +11,26 @@
 #include "graph/util/ToJson.h"
 namespace nebula {
 namespace graph {
+PlanNode* WeightedShortestPath::clone() const {
+  auto* path = WeightedShortestPath::make(qctx_, nullptr, space_, src_, dst_, weightProp_, maxSteps_);
+  path->SingleInputNode::cloneMembers(*this);
+  if (edgeProps_) {
+    path->setEdgeProps(std::make_unique<std::vector<EdgeProp>>(*edgeProps_));
+  }
+  return path;
+}
+
+std::unique_ptr<PlanNodeDescription> WeightedShortestPath::explain() const {
+  auto desc = SingleInputNode::explain();
+  addDescription("src", src_.toString(), desc.get());
+  addDescription("dst", dst_.toString(), desc.get());
+  addDescription("weightProp", weightProp_, desc.get());
+  addDescription("steps", folly::toJson(util::toJson(maxSteps_)), desc.get());
+  addDescription(
+      "edgeProps", edgeProps_ ? folly::toJson(util::toJson(*edgeProps_)) : "", desc.get());
+  return desc;
+}
+
 PlanNode* AllPaths::clone() const {
   auto* path = AllPaths::make(qctx_, nullptr, nullptr, space_, steps_, noLoop_, withProp_);
   path->cloneMembers(*this);

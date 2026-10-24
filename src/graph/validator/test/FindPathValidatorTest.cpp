@@ -358,5 +358,35 @@ TEST_F(FindPathValidatorTest, PathWithFilter) {
   }
 }
 
+TEST_F(FindPathValidatorTest, WeightedShortestPath) {
+  const std::string head = "FIND WEIGHTED SHORTEST PATH FROM \"1\" TO \"2\" OVER like WEIGHT BY ";
+  const std::string yield = " YIELD path AS p, cost AS c";
+  {
+    std::vector<PlanNode::Kind> expected = {PK::kWeightedShortestPath, PK::kPassThrough, PK::kStart};
+    EXPECT_TRUE(checkResult(head + "likeness" + yield, expected));
+    EXPECT_TRUE(checkResult(head + "likeness REVERSELY UPTO 3 STEPS" + yield, expected));
+  }
+  {
+    auto result = checkResult(head + "nosuch" + yield);
+    EXPECT_EQ(std::string(result.message()),
+              "SemanticError: Weight property `nosuch' not found on edge type `like'.");
+  }
+  {
+    auto result = checkResult(head + "start" + yield);
+    EXPECT_FALSE(result);
+    EXPECT_NE(std::string(result.message()).find("must be int or double"), std::string::npos);
+  }
+  {
+    auto result = checkResult(head + "likeness YIELD path AS p");
+    EXPECT_FALSE(result);
+  }
+  {
+    auto result = checkResult(
+        "FIND WEIGHTED SHORTEST PATH FROM \"1\", \"3\" TO \"2\" OVER like WEIGHT BY likeness" +
+        yield);
+    EXPECT_FALSE(result);
+  }
+}
+
 }  // namespace graph
 }  // namespace nebula

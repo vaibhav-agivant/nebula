@@ -241,6 +241,8 @@ const char* PlanNode::toString(PlanNode::Kind kind) {
       return "MultiShortestPath";
     case Kind::kAllPaths:
       return "AllPaths";
+    case Kind::kWeightedShortestPath:
+      return "WeightedShortestPath";
     case Kind::kCartesianProduct:
       return "CartesianProduct";
     case Kind::kSubgraph:

@@ -57,6 +57,8 @@ struct PathContext final : AstContext {
   bool isShortest{false};
   bool singleShortest{false};
   bool isWeight{false};
+  // property name of `WEIGHT BY'; read from every edge type in `over'
+  std::string weightProp;
   bool noLoop{false};
   bool withProp{false};
 

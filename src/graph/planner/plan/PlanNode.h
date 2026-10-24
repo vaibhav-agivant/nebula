@@ -66,6 +66,7 @@ class PlanNode {
     kBFSShortest,
     kMultiShortestPath,
     kAllPaths,
+    kWeightedShortestPath,
     kCartesianProduct,
     kSubgraph,
     kDataCollect,

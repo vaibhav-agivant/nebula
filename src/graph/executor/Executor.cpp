@@ -46,6 +46,7 @@
 #include "graph/executor/admin/UpdateUserExecutor.h"
 #include "graph/executor/admin/ZoneExecutor.h"
 #include "graph/executor/algo/AllPathsExecutor.h"
+#include "graph/executor/algo/WeightedShortestPathExecutor.h"
 #include "graph/executor/algo/BFSShortestPathExecutor.h"
 #include "graph/executor/algo/CartesianProductExecutor.h"
 #include "graph/executor/algo/MultiShortestPathExecutor.h"
@@ -472,6 +473,9 @@ Executor *Executor::makeExecutor(QueryContext *qctx, const PlanNode *node) {
     }
     case PlanNode::Kind::kAllPaths: {
       return pool->makeAndAdd<AllPathsExecutor>(node, qctx);
+    }
+    case PlanNode::Kind::kWeightedShortestPath: {
+      return pool->makeAndAdd<WeightedShortestPathExecutor>(node, qctx);
     }
     case PlanNode::Kind::kCartesianProduct: {
       return pool->makeAndAdd<CartesianProductExecutor>(node, qctx);

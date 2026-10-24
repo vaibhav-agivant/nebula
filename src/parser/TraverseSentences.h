@@ -501,9 +501,24 @@ class FindPathSentence final : public Sentence {
     return singleShortest_;
   }
 
+  void setWeightProp(std::string prop) {
+    weighted_ = true;
+    weightProp_ = std::move(prop);
+  }
+
+  bool weighted() const {
+    return weighted_;
+  }
+
+  const std::string& weightProp() const {
+    return weightProp_;
+  }
+
   std::string toString() const override;
 
  private:
+  bool weighted_{false};
+  std::string weightProp_;
   bool isShortest_;
   bool withProp_;
   bool noLoop_;

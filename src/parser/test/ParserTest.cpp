@@ -3260,3 +3260,38 @@ TEST_F(ParserTest, TestSpecialWhiteSpaceChar) {
 }
 
 }  // namespace nebula
+
+TEST_F(ParserTest, FindWeightedShortestPath) {
+  const std::string tail = " YIELD path AS p, cost AS c";
+  for (const std::string mid : {"OVER e WEIGHT BY w",
+                                "OVER e, f WEIGHT BY w",
+                                "OVER e WEIGHT BY w REVERSELY",
+                                "OVER e WEIGHT BY w BIDIRECT",
+                                "OVER e WEIGHT BY w UPTO 3 STEPS",
+                                "OVER e WEIGHT BY w BIDIRECT UPTO 3 STEPS"}) {
+    std::string query = "FIND WEIGHTED SHORTEST PATH FROM \"1\" TO \"2\" " + mid + tail;
+    auto result = parse(query);
+    ASSERT_TRUE(result.ok()) << query << ": " << result.status();
+    // the printed form parses again
+    ASSERT_TRUE(parse(result.value()->toString()).ok()) << result.value()->toString();
+  }
+  {
+    auto result = parse("FIND WEIGHTED SHORTEST PATH FROM \"1\" TO \"2\" OVER e" + tail);
+    ASSERT_FALSE(result.ok());
+  }
+  {
+    // piping into another sentence
+    std::string query = "FIND WEIGHTED SHORTEST PATH FROM \"1\" TO \"2\" OVER e WEIGHT BY w" +
+                        tail + " | YIELD $-.c AS cost";
+    ASSERT_TRUE(parse(query).ok());
+  }
+}
+
+TEST_F(ParserTest, WeightKeywordsStayUsableAsNames) {
+  ASSERT_TRUE(parse("CREATE TAG weighted(weight int)").ok());
+  ASSERT_TRUE(parse("CREATE EDGE weight(weighted double)").ok());
+  ASSERT_TRUE(parse("GO FROM \"1\" OVER weight YIELD weight.weighted").ok());
+  ASSERT_TRUE(parse("FIND SHORTEST PATH FROM \"1\" TO \"2\" OVER weight").ok());
+  ASSERT_TRUE(parse("FIND ALL PATH FROM \"1\" TO \"2\" OVER like").ok());
+  ASSERT_TRUE(parse("FIND NOLOOP PATH FROM \"1\" TO \"2\" OVER like").ok());
+}
