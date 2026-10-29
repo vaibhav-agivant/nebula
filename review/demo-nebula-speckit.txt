@@ -1,0 +1,66 @@
+QUERY>> FIND SHORTEST PATH FROM "a" TO "f" OVER road YIELD path AS p
++-----------------------------+
+| p                           |
++-----------------------------+
+| <("a")-[:road@0 {}]->("f")> |
++-----------------------------+
+Got 1 rows (time spent 4.428ms/4.807967ms)
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "a" TO "f" OVER road WEIGHT BY cost YIELD path AS p, cost AS c
++---------------------------------------------------------------------+-----+
+| p                                                                   | c   |
++---------------------------------------------------------------------+-----+
+| <("a")-[:road@0 {}]->("b")-[:road@0 {}]->("c")-[:road@0 {}]->("f")> | 3.0 |
++---------------------------------------------------------------------+-----+
+Got 1 rows (time spent 4.271ms/4.609007ms)
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "a" TO "f" OVER road WEIGHT BY cost UPTO 2 STEPS YIELD path AS p, cost AS c
++-------------------------------------------------+------+
+| p                                               | c    |
++-------------------------------------------------+------+
+| <("a")-[:road@0 {}]->("e")-[:road@0 {}]->("f")> | 20.0 |
++-------------------------------------------------+------+
+Got 1 rows (time spent 2.861ms/3.159268ms)
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "a" TO "f" OVER road, ferry WEIGHT BY cost YIELD path AS p, cost AS c
++--------------------------------------------------+-----+
+| p                                                | c   |
++--------------------------------------------------+-----+
+| <("a")-[:ferry@0 {}]->("c")-[:road@0 {}]->("f")> | 2.5 |
++--------------------------------------------------+-----+
+Got 1 rows (time spent 3.349ms/3.684968ms)
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "f" TO "a" OVER road WEIGHT BY cost REVERSELY YIELD path AS p, cost AS c
++---------------------------------------------------------------------+-----+
+| p                                                                   | c   |
++---------------------------------------------------------------------+-----+
+| <("f")<-[:road@0 {}]-("c")<-[:road@0 {}]-("b")<-[:road@0 {}]-("a")> | 3.0 |
++---------------------------------------------------------------------+-----+
+Got 1 rows (time spent 3.805ms/4.082127ms)
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "c" TO "d" OVER road WEIGHT BY cost BIDIRECT YIELD path AS p, cost AS c
++-------------------------------------------------+-----+
+| p                                               | c   |
++-------------------------------------------------+-----+
+| <("c")-[:road@0 {}]->("f")<-[:road@0 {}]-("d")> | 2.0 |
++-------------------------------------------------+-----+
+Got 1 rows (time spent 3.117ms/3.485454ms)
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "a" TO "f" OVER road WEIGHT BY cost YIELD path AS p, cost AS c | YIELD $-.c AS total_cost
++------------+
+| total_cost |
++------------+
+| 3.0        |
++------------+
+Got 1 rows (time spent 3.866ms/4.11985ms)
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "a" TO "f" OVER road WEIGHT BY nosuch YIELD path AS p, cost AS c
+[ERROR (-1009)]: SemanticError: Weight property `nosuch' not found on edge type `road'.
+<<END
+QUERY>> FIND WEIGHTED SHORTEST PATH FROM "n1" TO "n3" OVER neg WEIGHT BY cost YIELD path AS p, cost AS c
+[ERROR (-1005)]: Negative weight -5 found on edge `neg' (property `cost'), FIND WEIGHTED SHORTEST PATH needs non-negative weights.
+<<END
+QUERY>> EXPLAIN FIND WEIGHTED SHORTEST PATH FROM "a" TO "f" OVER road WEIGHT BY cost YIELD path AS p, cost AS c
+[ERROR (-1004)]: SyntaxError: syntax error near `EXPLAIN'
+<<END
+Closing a connection that is in use

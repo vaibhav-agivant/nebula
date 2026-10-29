@@ -1,0 +1,81 @@
+{
+ "name": "base",
+ "baseline": true,
+ "existing": {
+  "FIND SHORTEST PATH FROM \"v0\" TO \"v7\" OVER ra YIELD path AS p": [
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )"
+  ],
+  "FIND SHORTEST PATH FROM \"v1\" TO \"v9\" OVER ra BIDIRECT YIELD path AS p": [
+   "(\"v1\" )<-[:ra@1{}]-(\"v31\" )-[:ra@0{}]->(\"v9\" )",
+   "(\"v1\" )<-[:ra@2{}]-(\"v12\" )-[:ra@0{}]->(\"v9\" )"
+  ],
+  "FIND SHORTEST PATH FROM \"v2\" TO \"v11\" OVER ra REVERSELY UPTO 3 STEPS YIELD path AS p": [],
+  "FIND SHORTEST PATH WITH PROP FROM \"v0\" TO \"v7\" OVER ra YIELD path AS p": [
+   "(\"v0\" :person{age: 1, name: \"v0\"})-[:ra@2{w: 11}]->(\"v7\" :person{age: 1, name: \"v7\"})"
+  ],
+  "FIND SHORTEST PATH FROM \"v0\",\"v1\" TO \"v7\",\"v9\" OVER * YIELD path AS p": [
+   "(\"v0\" )-[:ra@0{}]->(\"v35\" )-[:rb@1{}]->(\"v9\" )",
+   "(\"v0\" )-[:ra@2{}]->(\"v29\" )-[:ra@0{}]->(\"v9\" )",
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )",
+   "(\"v1\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v1\" )-[:ra@0{}]->(\"v35\" )-[:rb@1{}]->(\"v9\" )"
+  ],
+  "FIND ALL PATH FROM \"v0\" TO \"v7\" OVER ra UPTO 2 STEPS YIELD path AS p": [
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )"
+  ],
+  "FIND ALL PATH FROM \"v3\" TO \"v5\" OVER rb UPTO 3 STEPS YIELD path AS p": [],
+  "FIND NOLOOP PATH FROM \"v0\" TO \"v7\" OVER ra UPTO 3 STEPS YIELD path AS p": [
+   "(\"v0\" )-[:ra@1{}]->(\"v6\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )"
+  ],
+  "FIND NOLOOP PATH FROM \"v4\" TO \"v8\" OVER ra,rb BIDIRECT UPTO 2 STEPS YIELD path AS p": [
+   "(\"v4\" )-[:ra@0{}]->(\"v21\" )-[:ra@0{}]->(\"v8\" )"
+  ],
+  "GO FROM \"v0\" OVER ra YIELD dst(edge) AS id | FIND SHORTEST PATH FROM $-.id TO \"v7\" OVER ra YIELD path AS p": [
+   "(\"v29\" )-[:ra@0{}]->(\"v11\" )-[:ra@0{}]->(\"v37\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@0{}]->(\"v11\" )-[:ra@2{}]->(\"v4\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@0{}]->(\"v9\" )-[:ra@1{}]->(\"v10\" )-[:ra@2{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@2{}]->(\"v3\" )-[:ra@1{}]->(\"v10\" )-[:ra@2{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@2{}]->(\"v3\" )-[:ra@1{}]->(\"v37\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v35\" )-[:ra@0{}]->(\"v0\" )-[:ra@2{}]->(\"v7\" )",
+   "(\"v6\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v7\" )-[:ra@0{}]->(\"v1\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )"
+  ],
+  "FIND SHORTEST PATH FROM \"v5\" TO \"v6\" OVER ra YIELD path AS p | YIELD count(*) AS n": [
+   "2"
+  ],
+  "FIND ALL PATH FROM \"v1\" TO \"v2\" OVER ra,rb UPTO 2 STEPS WHERE rb.w > 0.2 YIELD path AS p": "ERR SyntaxError: syntax error near `WHERE'"
+ },
+ "perf": [
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 14,
+   "res": "(True, 3)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 54,
+   "res": "(True, 2)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 56,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 56,
+   "res": "(True, 4)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 53,
+   "res": "(True, 1)"
+  }
+ ],
+ "health": {
+  "graphd_answers": true,
+  "graphd_processes": "3",
+  "crash_logs": []
+ }
+}

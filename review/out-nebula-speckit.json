@@ -1,0 +1,253 @@
+{
+ "name": "nebula-speckit",
+ "baseline": false,
+ "oracle": {
+  "total": 150,
+  "correct": 150,
+  "missing": 0,
+  "spurious": 0,
+  "wrong_cost": 0,
+  "bad_path": 0,
+  "error": 0,
+  "timeout": 0,
+  "examples": {}
+ },
+ "src_eq_dst": "('OK', ['v3'], 0, 1)",
+ "probes": [
+  {
+   "id": "P1",
+   "desc": "zero-weight cycle: cost 0 via z1,z2,z3 and terminates",
+   "pass": true,
+   "detail": "('OK', ['z1', 'z2', 'z3'], 0, 1)"
+  },
+  {
+   "id": "P2",
+   "desc": "parallel edges (3 ranks): picks cheapest (2)",
+   "pass": true,
+   "detail": "('OK', ['q1', 'q2'], 2, 1)"
+  },
+  {
+   "id": "P3",
+   "desc": "self-loop on the way: cost 4, path s1,s2",
+   "pass": true,
+   "detail": "('OK', ['s1', 's2'], 4, 1)"
+  },
+  {
+   "id": "P4",
+   "desc": "negative weight on reachable edge -> clear error (not a syntax error)",
+   "pass": true,
+   "detail": "('ERR', \"Negative weight -5 found on edge `rn' (property `w'), FIND WEIGHTED SHORTEST PATH needs non-negative weights.\")"
+  },
+  {
+   "id": "P5",
+   "desc": "negative edge NOT reachable from source: still answers cost 3 (desirable, not required)",
+   "pass": true,
+   "detail": "('OK', ['m1', 'm2'], 3, 1)"
+  },
+  {
+   "id": "P6",
+   "desc": "src == dst returns something sensible, no crash (record behavior)",
+   "pass": true,
+   "detail": "('OK', ['v3'], 0, 1)"
+  },
+  {
+   "id": "P7",
+   "desc": "unknown destination -> empty, not error",
+   "pass": true,
+   "detail": "('EMPTY',)"
+  },
+  {
+   "id": "P8",
+   "desc": "unknown source -> empty, not error",
+   "pass": true,
+   "detail": "('EMPTY',)"
+  },
+  {
+   "id": "P9",
+   "desc": "int64 overflow in sum is NOT silently wrong (error, or correct value)",
+   "pass": false,
+   "detail": "('OK', ['o1', 'o2', 'o3'], -1616, 1)"
+  },
+  {
+   "id": "P10",
+   "desc": "double sum 0.1+0.2 ~ 0.3",
+   "pass": true,
+   "detail": "('OK', ['d1', 'd2', 'd3'], 0.30000000000000004, 1)"
+  },
+  {
+   "id": "P11",
+   "desc": "huge UPTO value is accepted and terminates",
+   "pass": true,
+   "detail": "('OK', ['v1', 'v25', 'v23', 'v37', 'v14', 'v4', 'v9'], 19, 1)"
+  },
+  {
+   "id": "P12",
+   "desc": "UPTO 0 STEPS: error or empty, no crash (record behavior)",
+   "pass": true,
+   "detail": "('ERR', 'SemanticError: UPTO steps of FIND WEIGHTED SHORTEST PATH must be positive.')"
+  },
+  {
+   "id": "P13",
+   "desc": "lower-case keywords parse",
+   "pass": true,
+   "detail": "('OK', ['z1', 'z2', 'z3'], 0, 1)"
+  },
+  {
+   "id": "P14",
+   "desc": "backquoted property name parses",
+   "pass": true,
+   "detail": "('OK', ['z1', 'z2', 'z3'], 0, 1)"
+  },
+  {
+   "id": "P15",
+   "desc": "pipe into LIMIT works",
+   "pass": true,
+   "detail": "('OK', ['z1', 'z2', 'z3'], 0, 1)"
+  },
+  {
+   "id": "P16",
+   "desc": "string weight -> clear non-syntax error",
+   "pass": true,
+   "detail": "('ERR', \"SemanticError: Weight property `w' on edge type `rs' must be int or double, but was `STRING'.\")"
+  },
+  {
+   "id": "P17",
+   "desc": "unknown edge type -> error",
+   "pass": true,
+   "detail": "('ERR', 'SemanticError: nosuchedge not found in space [tx].')"
+  },
+  {
+   "id": "P18",
+   "desc": "words WEIGHT/WEIGHTED/COST still usable as tag, property and alias names",
+   "pass": true,
+   "detail": ""
+  }
+ ],
+ "existing": {
+  "FIND SHORTEST PATH FROM \"v0\" TO \"v7\" OVER ra YIELD path AS p": [
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )"
+  ],
+  "FIND SHORTEST PATH FROM \"v1\" TO \"v9\" OVER ra BIDIRECT YIELD path AS p": [
+   "(\"v1\" )<-[:ra@1{}]-(\"v31\" )-[:ra@0{}]->(\"v9\" )",
+   "(\"v1\" )<-[:ra@2{}]-(\"v12\" )-[:ra@0{}]->(\"v9\" )"
+  ],
+  "FIND SHORTEST PATH FROM \"v2\" TO \"v11\" OVER ra REVERSELY UPTO 3 STEPS YIELD path AS p": [],
+  "FIND SHORTEST PATH WITH PROP FROM \"v0\" TO \"v7\" OVER ra YIELD path AS p": [
+   "(\"v0\" :person{age: 1, name: \"v0\"})-[:ra@2{w: 11}]->(\"v7\" :person{age: 1, name: \"v7\"})"
+  ],
+  "FIND SHORTEST PATH FROM \"v0\",\"v1\" TO \"v7\",\"v9\" OVER * YIELD path AS p": [
+   "(\"v0\" )-[:ra@0{}]->(\"v35\" )-[:rb@1{}]->(\"v9\" )",
+   "(\"v0\" )-[:ra@2{}]->(\"v29\" )-[:ra@0{}]->(\"v9\" )",
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )",
+   "(\"v1\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v1\" )-[:ra@0{}]->(\"v35\" )-[:rb@1{}]->(\"v9\" )"
+  ],
+  "FIND ALL PATH FROM \"v0\" TO \"v7\" OVER ra UPTO 2 STEPS YIELD path AS p": [
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )"
+  ],
+  "FIND ALL PATH FROM \"v3\" TO \"v5\" OVER rb UPTO 3 STEPS YIELD path AS p": [],
+  "FIND NOLOOP PATH FROM \"v0\" TO \"v7\" OVER ra UPTO 3 STEPS YIELD path AS p": [
+   "(\"v0\" )-[:ra@1{}]->(\"v6\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v0\" )-[:ra@2{}]->(\"v7\" )"
+  ],
+  "FIND NOLOOP PATH FROM \"v4\" TO \"v8\" OVER ra,rb BIDIRECT UPTO 2 STEPS YIELD path AS p": [
+   "(\"v4\" )-[:ra@0{}]->(\"v21\" )-[:ra@0{}]->(\"v8\" )"
+  ],
+  "GO FROM \"v0\" OVER ra YIELD dst(edge) AS id | FIND SHORTEST PATH FROM $-.id TO \"v7\" OVER ra YIELD path AS p": [
+   "(\"v29\" )-[:ra@0{}]->(\"v11\" )-[:ra@0{}]->(\"v37\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@0{}]->(\"v11\" )-[:ra@2{}]->(\"v4\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@0{}]->(\"v9\" )-[:ra@1{}]->(\"v10\" )-[:ra@2{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@2{}]->(\"v3\" )-[:ra@1{}]->(\"v10\" )-[:ra@2{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v29\" )-[:ra@2{}]->(\"v3\" )-[:ra@1{}]->(\"v37\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v35\" )-[:ra@0{}]->(\"v0\" )-[:ra@2{}]->(\"v7\" )",
+   "(\"v6\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )",
+   "(\"v7\" )-[:ra@0{}]->(\"v1\" )-[:ra@0{}]->(\"v34\" )-[:ra@1{}]->(\"v7\" )"
+  ],
+  "FIND SHORTEST PATH FROM \"v5\" TO \"v6\" OVER ra YIELD path AS p | YIELD count(*) AS n": [
+   "2"
+  ],
+  "FIND ALL PATH FROM \"v1\" TO \"v2\" OVER ra,rb UPTO 2 STEPS WHERE rb.w > 0.2 YIELD path AS p": "ERR SyntaxError: syntax error near `WHERE'"
+ },
+ "perf": [
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 13,
+   "res": "(True, 0)"
+  },
+  {
+   "q": "weighted unbounded",
+   "ms": 264,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "weighted UPTO 4",
+   "ms": 14,
+   "res": "(True, 0)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 54,
+   "res": "(True, 0)"
+  },
+  {
+   "q": "weighted unbounded",
+   "ms": 278,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "weighted UPTO 4",
+   "ms": 11,
+   "res": "(True, 0)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 55,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "weighted unbounded",
+   "ms": 221,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "weighted UPTO 4",
+   "ms": 15,
+   "res": "(True, 0)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 50,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "weighted unbounded",
+   "ms": 63,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "weighted UPTO 4",
+   "ms": 58,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "old FIND SHORTEST PATH",
+   "ms": 55,
+   "res": "(True, 0)"
+  },
+  {
+   "q": "weighted unbounded",
+   "ms": 427,
+   "res": "(True, 1)"
+  },
+  {
+   "q": "weighted UPTO 4",
+   "ms": 18,
+   "res": "(True, 0)"
+  }
+ ],
+ "health": {
+  "graphd_answers": true,
+  "graphd_processes": "2",
+  "crash_logs": []
+ }
+}

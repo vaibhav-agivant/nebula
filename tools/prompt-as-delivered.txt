@@ -1,0 +1,15 @@
+In the NebulaGraph query engine (the C++ repo in the current directory), add weighted shortest path to nGQL, with this exact syntax:
+
+FIND WEIGHTED SHORTEST PATH FROM <src> TO <dst> OVER <edge_type> [, <edge_type> ...] WEIGHT BY <edge_prop> [REVERSELY | BIDIRECT] [UPTO <n> STEPS] YIELD path AS p, cost AS c
+
+1. It returns the single path from src to dst with the smallest total weight, as the path value p (same path type and node ordering as the existing FIND SHORTEST PATH) and the total weight as c. The total weight is the sum of <edge_prop> over the path's edges. Fewest hops is NOT the goal: a cheaper path with more hops must win.
+2. If several paths tie on cost, return any one of them (the cost must be right).
+3. <edge_prop> is read from every listed edge type. It must exist on each listed edge type and be an int or a double; otherwise fail with a clear error before running the search. A negative weight met at run time must also fail with a clear error.
+4. UPTO <n> STEPS limits the number of edges in the path to n; the cheapest path within that limit is returned. Without UPTO the search is unbounded.
+5. REVERSELY follows edges backwards. BIDIRECT follows edges in either direction. Several edge types may be listed.
+6. If dst cannot be reached (within the limit), or a vertex does not exist, return an empty result, not an error.
+7. It works in a pipe, for example: FIND WEIGHTED SHORTEST PATH ... YIELD path AS p, cost AS c | YIELD $-.c AS cost
+8. Existing FIND SHORTEST PATH, FIND ALL PATH and FIND NOLOOP PATH must behave exactly as before.
+
+Build with: ~/exp/tools/build.sh   (run from the repo directory; takes minutes)
+Test with:  ~/exp/tools/test.sh    (starts a local database, loads a small graph, runs 17 checks; takes about 2 minutes)

@@ -1,0 +1,18 @@
+{
+ "name": "base",
+ "baseline": true,
+ "probes": [
+  {
+   "id": "K1",
+   "desc": "EXISTING: property named Weight (mixed case) still readable via properties(edge).Weight",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "id": "K2",
+   "desc": "EXISTING: FETCH PROP of mixed-case Weight property",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

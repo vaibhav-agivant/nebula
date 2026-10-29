@@ -1,0 +1,67 @@
+patch lines: 83
+ M src/graph/validator/test/FindPathValidatorTest.cpp
+ M src/parser/test/ParserTest.cpp
+cmake-ok
+make-exit=0
+=== parser_test (new tests)
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from ParserTest
+[ RUN      ] ParserTest.FindWeightedShortestPath
+/work/nebula/src/parser/test/ParserTest.cpp:3274: Failure
+Value of: result.ok()
+Expected: true
+FIND WEIGHTED SHORTEST PATH FROM "1" TO "2" OVER e WEIGHT BY w REVERSELY YIELD path AS p, cost AS c: The repr sentence `FIND WEIGHTED SHORTEST PATH FROM "1" TO "2" OVER e REVERSELY WEIGHT BY w YIELD PATH AS p,cost AS c' can't be parsed, error: `SyntaxError: syntax error near `REVERSELY''.
+[  FAILED  ] ParserTest.FindWeightedShortestPath (0 ms)
+[ RUN      ] ParserTest.WeightKeywordsStayUsableAsNames
+[       OK ] ParserTest.WeightKeywordsStayUsableAsNames (0 ms)
+[----------] 2 tests from ParserTest (0 ms total)
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] ParserTest.FindWeightedShortestPath
+=== parser_test (all)
+[  FAILED  ] ParserTest.FindWeightedShortestPath
+
+ 1 FAILED TEST
+=== validator_test FindPathValidatorTest
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 7 tests from FindPathValidatorTest
+[ RUN      ] FindPathValidatorTest.invalidYield
+[       OK ] FindPathValidatorTest.invalidYield (10 ms)
+[ RUN      ] FindPathValidatorTest.SinglePairPath
+[       OK ] FindPathValidatorTest.SinglePairPath (0 ms)
+[ RUN      ] FindPathValidatorTest.MultiPairPath
+[       OK ] FindPathValidatorTest.MultiPairPath (0 ms)
+[ RUN      ] FindPathValidatorTest.ALLPath
+[       OK ] FindPathValidatorTest.ALLPath (0 ms)
+[ RUN      ] FindPathValidatorTest.RunTimePath
+[       OK ] FindPathValidatorTest.RunTimePath (2 ms)
+[ RUN      ] FindPathValidatorTest.PathWithFilter
+[       OK ] FindPathValidatorTest.PathWithFilter (0 ms)
+[ RUN      ] FindPathValidatorTest.WeightedShortestPath
+/work/nebula/src/graph/validator/test/FindPathValidatorTest.cpp:366: Failure
+Value of: checkResult(head + "likeness" + yield, expected)
+	Expected: [WeightedShortestPath, PassThrough, Start])
+Expected: true
+/work/nebula/src/graph/validator/test/FindPathValidatorTest.cpp:367: Failure
+Value of: checkResult(head + "likeness REVERSELY UPTO 3 STEPS" + yield, expected)
+  Actual: false (The repr sentence `FIND WEIGHTED SHORTEST PATH FROM "1" TO "2" OVER like REVERSELY WEIGHT BY likeness UPTO 3 STEPS YIELD PATH AS p,cost AS c' can't be parsed, error: `SyntaxError: syntax error near `REVERSELY''.)
+Expected: true
+/work/nebula/src/graph/validator/test/FindPathValidatorTest.cpp:371: Failure
+Expected equality of these values:
+    Which is: "SemanticError: Weight property `nosuch' not found in edge type `like'."
+/work/nebula/src/graph/validator/test/FindPathValidatorTest.cpp:387: Failure
+Value of: result
+Expected: false
+[  FAILED  ] FindPathValidatorTest.WeightedShortestPath (1 ms)
+[----------] 7 tests from FindPathValidatorTest (16 ms total)
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (16 ms total)
+[  PASSED  ] 6 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FindPathValidatorTest.WeightedShortestPath
+
+[exited with code 0]

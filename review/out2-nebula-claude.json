@@ -1,0 +1,38 @@
+{
+ "name": "nebula-claude",
+ "baseline": false,
+ "src_eq_dst_existing": "('EMPTY',)",
+ "crashed_by_overflow": false,
+ "probes": [
+  {
+   "id": "K1",
+   "desc": "EXISTING: property named Weight (mixed case) still readable via properties(edge).Weight",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "id": "K2",
+   "desc": "EXISTING: FETCH PROP of mixed-case Weight property",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "id": "K3",
+   "desc": "WEIGHT BY with a mixed-case property name (Weight) works",
+   "pass": true,
+   "detail": "('OK', ['m1', 'm2'], 3)"
+  },
+  {
+   "id": "K4",
+   "desc": "src == dst on a NONEXISTENT vertex -> empty (requirement 6)",
+   "pass": true,
+   "detail": "('EMPTY',)"
+  },
+  {
+   "id": "K5",
+   "desc": "int64 overflow on a longer path must not change the answer: expect cost 5 (path oa,oc); graphd must stay up",
+   "pass": true,
+   "detail": "result=('OK', ['oa', 'oc'], 5) graphd_alive_after=True"
+  }
+ ]
+}
